@@ -153,9 +153,8 @@ ${HTML(fragment.foot_html())}
     <section class="course-content" id="course-content">
         <main id="main" tabindex="-1" aria-label="Content">
             <div class="path"></div>
-            % if getattr(course, 'entrance_exam_enabled') and \
-               getattr(course, 'entrance_exam_minimum_score_pct') and \
-               entrance_exam_current_score is not UNDEFINED:
+            % if getattr(course, 'entrance_exam_enabled') and getattr(course, 'entrance_exam_minimum_score_pct') and \
+                entrance_exam_passed is not UNDEFINED:
                 % if not entrance_exam_passed:
                 <p class="sequential-status-message">
                     ${_('To access course materials, you must score {required_score}% or higher on this \
@@ -176,9 +175,7 @@ ${HTML(fragment.foot_html())}
                 </script>
                 % else:
                   <p class="sequential-status-message">
-                    ${_('Your score is {current_score}%. You have passed the entrance exam.').format(
-                        current_score=int(round(entrance_exam_current_score * 100))
-                    )}
+                    ${_('You have passed the entrance exam.')}
                 </p>
                 % endif
             % endif

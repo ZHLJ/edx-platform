@@ -49,7 +49,7 @@ class CourseGrade(object):
         a dict keyed by subsection format types.
         """
         subsections_by_format = defaultdict(OrderedDict)
-        for chapter in self.chapter_grades:
+        for chapter in self.chapter_grades.itervalues():
             for subsection_grade in chapter['sections']:
                 if subsection_grade.graded:
                     graded_total = subsection_grade.graded_total
@@ -63,7 +63,7 @@ class CourseGrade(object):
         Returns a dict of problem scores keyed by their locations.
         """
         locations_to_scores = {}
-        for chapter in self.chapter_grades:
+        for chapter in self.chapter_grades.itervalues():
             for subsection_grade in chapter['sections']:
                 locations_to_scores.update(subsection_grade.locations_to_scores)
         return locations_to_scores
@@ -88,10 +88,12 @@ class CourseGrade(object):
     @lazy
     def chapter_grades(self):
         """
-        Returns a list of chapters, each containing its subsection grades,
-        display name, and url name.
+        Returns a dictionary of dictionaries.
+        The primary dictionary is keyed by the chapter's usage_key.
+        The secondary dictionary contains the chapter's
+        subsection grades, display name, and url name.
         """
-        chapter_grades = []
+        chapter_grades = OrderedDict()
         for chapter_key in self.course_structure.get_children(self.course.location):
             chapter = self.course_structure[chapter_key]
             chapter_subsection_grades = []
@@ -101,11 +103,11 @@ class CourseGrade(object):
                     self._subsection_grade_factory.create(self.course_structure[subsection_key], read_only=True)
                 )
 
-            chapter_grades.append({
+            chapter_grades[chapter_key] = {
                 'display_name': block_metadata_utils.display_name_with_default_escaped(chapter),
                 'url_name': block_metadata_utils.url_name_for_block(chapter),
                 'sections': chapter_subsection_grades
-            })
+            }
         return chapter_grades
 
     @property
@@ -152,7 +154,7 @@ class CourseGrade(object):
 
         If read_only is True, doesn't save any updates to the grades.
         """
-        subsections_total = sum(len(chapter['sections']) for chapter in self.chapter_grades)
+        subsections_total = sum(len(chapter['sections']) for chapter in self.chapter_grades.itervalues())
 
         total_graded_subsections = sum(len(x) for x in self.graded_subsections_by_format.itervalues())
         subsections_created = len(self._subsection_grade_factory._unsaved_subsection_grades)  # pylint: disable=protected-access
